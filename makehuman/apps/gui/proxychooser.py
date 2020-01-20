@@ -47,6 +47,7 @@ import filechooser as fc
 import log
 import getpath
 import filecache
+import numpy as np
 
 
 class ProxyAction(gui3d.Action):
@@ -652,3 +653,55 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         priority = 2    # Make sure proxy choosers come before material library
         gui3d.app.addSaveHandler(self.saveHandler, priority)
 
+    def getProxiesByRenderOrder(self):
+        """
+        Return UUIDs of clothes proxys sorted on proxy.z_depth render queue
+        parameter (the order in which they will be rendered).
+        """
+        decoratedClothesList = [(pxy.z_depth, pxy.uuid) for pxy in self.getSelection()]
+        decoratedClothesList.sort()
+        return [uuid for (_, uuid) in decoratedClothesList]
+
+    def updateFaceMasks(self, enableFaceHiding = True):
+        """
+        Apply facemask (deleteVerts) defined on clothes to body and lower layers
+        of clothing. Uses order as defined in self.clothesList.
+        """
+        if self.blockFaceMasking:
+            return
+
+        import proxy
+        log.debug("Clothes library: updating face masks (face hiding %s).", "enabled" if enableFaceHiding else "disabled")
+
+        human = self.human
+        if not enableFaceHiding:
+            human.changeVertexMask(None)
+
+            proxies = self.getSelection()
+            for pxy in proxies:
+                obj = pxy.object
+                obj.changeVertexMask(None)
+            return
+
+
+        vertsMask = np.ones(human.meshData.getVertexCount(), dtype=bool)
+
+        stackedProxies = [human.clothesProxies[uuid] for uuid in reversed(self.getProxiesByRenderOrder())]
+
+        for pxy in stackedProxies:
+            obj = pxy.object
+
+            # Remap vertices from basemesh to proxy verts
+            proxyVertMask = proxy.transferVertexMaskToProxy(vertsMask, pxy)
+
+            # Apply accumulated mask from previous clothes layers on this clothing piece
+            obj.changeVertexMask(proxyVertMask)
+
+            if pxy.deleteVerts is not None and len(pxy.deleteVerts > 0):
+                log.debug("Loaded %s deleted verts (%s faces) from %s proxy.", np.count_nonzero(pxy.deleteVerts), len(human.meshData.getFacesForVertices(np.argwhere(pxy.deleteVerts)[...,0])),pxy.name)
+
+                # Modify accumulated (basemesh) verts mask
+                verts = np.argwhere(pxy.deleteVerts)[...,0]
+                vertsMask[verts] = False
+
+        human.changeVertexMask(vertsMask)
