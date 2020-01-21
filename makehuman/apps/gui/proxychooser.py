@@ -688,6 +688,20 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
 
         stackedProxies = [human.clothesProxies[uuid] for uuid in reversed(self.getProxiesByRenderOrder())]
 
+        # add body parts to stackedProxies
+        if human.hairProxy:
+            stackedProxies.append(human.hairProxy)
+        if human.eyesProxy:
+            stackedProxies.append(human.eyesProxy)
+        if human.eyebrowsProxy:
+            stackedProxies.append(human.eyebrowsProxy)
+        if human.eyelashesProxy:
+            stackedProxies.append(human.eyelashesProxy)
+        if human.teethProxy:
+            stackedProxies.append(human.teethProxy)
+        if human.tongueProxy:
+            stackedProxies.append(human.tongueProxy)
+
         for pxy in stackedProxies:
             obj = pxy.object
 
