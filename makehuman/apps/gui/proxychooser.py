@@ -662,6 +662,7 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         decoratedClothesList.sort()
         return [uuid for (_, uuid) in decoratedClothesList]
 
+    # TODO: call this when any proxy selection has changed, not in 3_libraries_clothes_chooser.py
     def updateFaceMasks(self, enableFaceHiding = True):
         """
         Apply facemask (deleteVerts) defined on clothes to body and lower layers
@@ -671,7 +672,7 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
             return
 
         import proxy
-        log.debug("Clothes library: updating face masks (face hiding %s).", "enabled" if enableFaceHiding else "disabled")
+        log.debug("Proxychooser: updating face masks (face hiding %s).", "enabled" if enableFaceHiding else "disabled")
 
         human = self.human
         if not enableFaceHiding:
