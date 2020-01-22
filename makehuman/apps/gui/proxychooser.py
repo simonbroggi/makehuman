@@ -653,12 +653,13 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         priority = 2    # Make sure proxy choosers come before material library
         gui3d.app.addSaveHandler(self.saveHandler, priority)
 
-    def getProxiesByRenderOrder(self):
+    # TODO: consider moving this method to human.py
+    def getClothesByRenderOrder(self):
         """
         Return UUIDs of clothes proxys sorted on proxy.z_depth render queue
         parameter (the order in which they will be rendered).
         """
-        decoratedClothesList = [(pxy.z_depth, pxy.uuid) for pxy in self.getSelection()]
+        decoratedClothesList = [(pxy.z_depth, pxy.uuid) for pxy in self.human.clothesProxies.values()]
         decoratedClothesList.sort()
         return [uuid for (_, uuid) in decoratedClothesList]
 
@@ -687,7 +688,7 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
 
         vertsMask = np.ones(human.meshData.getVertexCount(), dtype=bool)
 
-        stackedProxies = [human.clothesProxies[uuid] for uuid in reversed(self.getProxiesByRenderOrder())]
+        stackedProxies = [human.clothesProxies[uuid] for uuid in reversed(self.getClothesByRenderOrder())]
 
         # add body parts to stackedProxies
         if human.hairProxy:
