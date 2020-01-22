@@ -98,6 +98,7 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
         self.visualizeFaceMasks(False)
 
     def loadHandler(self, human, values, strict):
+        #TODO: get this optimization to all the proxychoosers
         if values[0] == 'status':
             if values[1] == 'started':
                 # Don't update face masks during loading (optimization)
@@ -119,10 +120,6 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
         super(ClothesTaskView, self).onHumanChanged(event)
         if event.change == 'reset':
             self.faceHidingTggl.setSelected(True)  # TODO super already reapplies masking before this is reset
-        elif event.change == 'proxy' and event.pxy == 'proxymeshes' and \
-             self.faceHidingTggl.selected:
-            # Update face masks if topology was changed
-            self.updateFaceMasks(self.faceHidingTggl.selected)
 
     def saveHandler(self, human, file):
         super(ClothesTaskView, self).saveHandler(human, file)
