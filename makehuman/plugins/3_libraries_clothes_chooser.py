@@ -154,6 +154,8 @@ class FaceHideCheckbox(gui.CheckBox):
         self.callEvent("onMouseExited", None)
 
 
+# TODO: consider generalizing moving everything below to proxychooser
+
 # This method is called when the plugin is loaded into makehuman
 # The app reference is passed so that a plugin can attach a new category, task, or other GUI elements
 
