@@ -122,11 +122,27 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
 
         self.createFileChooser()
 
+        self.faceHidingTggl = self.optionsBox.addWidget(FaceHideCheckbox("Hide faces under %s"  % self.proxyName))
+        @self.faceHidingTggl.mhEvent
+        def onClicked(event):
+            self.updateFaceMasks(self.faceHidingTggl.selected)
+        @self.faceHidingTggl.mhEvent
+        def onMouseEntered(event):
+            self.visualizeFaceMasks(True)
+        @self.faceHidingTggl.mhEvent
+        def onMouseExited(event):
+            self.visualizeFaceMasks(False)
+        self.faceHidingTggl.setSelected(True)
+
+        self.oldPxyMats = {}
+        self.blockFaceMasking = False
 
     def createFileChooser(self):
         """
         Overwrite to do custom initialization of filechooser widget.
         """
+        self.optionsBox = self.addLeftWidget(gui.GroupBox('Options'))
+        
         #self.filechooser = self.addTopWidget(fc.FileChooser(self.paths, 'mhclo', 'thumb', mh.getSysDataPath(proxyName+'/notfound.thumb')))
         notfoundIcon = self.getNotFoundIcon()
         if not os.path.isfile(notfoundIcon):
@@ -449,6 +465,8 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         #self.filechooser.deselectAll()
         self.deselectAllProxies()
 
+        self.updateFaceMasks(self.faceHidingTggl.selected)
+
     def adaptProxyToHuman(self, pxy, obj, updateSubdivided=True, fit_to_posed=False):
         mesh = obj.getSeedMesh()
         pxy.update(mesh, fit_to_posed)
@@ -510,15 +528,32 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
                     obj.getSubdivisionMesh()
         if event.change == 'proxy':
             hideFaces = True # hide faces by default
-            try:
-                if not self.faceHidingTggl.selected:
-                    hideFaces = False # don't hide if explicitly not hidden is selected
-            except AttributeError:
-                # TODO: get this optimization to all the proxychoosers
-                hideFaces = True
+            # try:
+            if not self.faceHidingTggl.selected:
+                hideFaces = False # don't hide if explicitly not hidden is selected
+            # except AttributeError:
+            #     # TODO: get this optimization to all the proxychoosers
+            #     hideFaces = True
             # Update face masks if topology was changed
             self.updateFaceMasks(hideFaces)
 
+    def visualizeFaceMasks(self, enabled):
+        import material
+        import getpath
+        # TODO: should probably only include the proxies form its own proxyName
+        if enabled:
+            self.oldPxyMats = dict()
+            xray_mat = material.fromFile(getpath.getSysDataPath('materials/xray.mhmat'))
+            for pxy in self.human.getProxies(includeHumanProxy=False):
+                # if pxy.type == 'Eyes':
+                #     # Don't X-ray the eyes, it looks weird
+                #     continue
+                self.oldPxyMats[pxy.uuid] = pxy.object.material.clone()
+                pxy.object.material = xray_mat
+        else:
+            for pxy in self.human.getProxies(includeHumanProxy=False):
+                if pxy.uuid in self.oldPxyMats:
+                    pxy.object.material = self.oldPxyMats[pxy.uuid]
 
     def onHumanChanging(self, event):
         if event.change == 'modifier':
@@ -540,6 +575,22 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
             self.adaptProxyToHuman(pxy, obj, updateSubdivided, fit_to_posed)
 
     def loadHandler(self, human, values, strict):
+
+        if values[0] == 'status':
+            if values[1] == 'started':
+                # Don't update face masks during loading (optimization)
+                self.blockFaceMasking = True
+            elif values[1] == 'finished':
+                # When loading ends, update face masks
+                self.blockFaceMasking = False
+                self.updateFaceMasks(self.faceHidingTggl.selected)
+            return
+
+        if values[0] == self.proxyName + 'HideFaces':
+            enabled = values[1].lower() in ['true', 'yes']
+            self.faceHidingTggl.setChecked(enabled)
+            return
+
         if values[0] == 'status':
             return
 
@@ -566,6 +617,8 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
     def saveHandler(self, human, file):
         for pxy in self.getSelection():
             file.write('%s %s %s\n' % (self.getSaveName(), pxy.name, pxy.getUuid()))
+        
+        file.write(self.proxyName + 'HideFaces ' + str(self.faceHidingTggl.selected) + '\n')
 
     def findProxyMetadataByFilename(self, path):
         """
@@ -663,6 +716,7 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         gui3d.app.addLoadHandler(self.getSaveName(), self.loadHandler)
         priority = 2    # Make sure proxy choosers come before material library
         gui3d.app.addSaveHandler(self.saveHandler, priority)
+        gui3d.app.addLoadHandler(self.proxyName + 'HideFaces', self.loadHandler)
 
     # TODO: consider moving this method to human.py
     def getClothesByRenderOrder(self):
@@ -735,3 +789,10 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
                 vertsMask[verts] = False
 
         human.changeVertexMask(vertsMask)
+
+class FaceHideCheckbox(gui.CheckBox):
+    def enterEvent(self, event):
+        self.callEvent("onMouseEntered", None)
+
+    def leaveEvent(self, event):
+        self.callEvent("onMouseExited", None)

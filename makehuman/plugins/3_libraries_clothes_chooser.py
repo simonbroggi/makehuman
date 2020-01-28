@@ -52,25 +52,6 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
     def __init__(self, category):
         super(ClothesTaskView, self).__init__(category, 'clothes', multiProxy = True, tagFilter = True)
 
-        self.faceHidingTggl = self.optionsBox.addWidget(FaceHideCheckbox("Hide faces under %s"  % self.proxyName))
-        @self.faceHidingTggl.mhEvent
-        def onClicked(event):
-            self.updateFaceMasks(self.faceHidingTggl.selected)
-        @self.faceHidingTggl.mhEvent
-        def onMouseEntered(event):
-            self.visualizeFaceMasks(True)
-        @self.faceHidingTggl.mhEvent
-        def onMouseExited(event):
-            self.visualizeFaceMasks(False)
-        self.faceHidingTggl.setSelected(True)
-
-        self.oldPxyMats = {}
-        self.blockFaceMasking = False
-
-    def createFileChooser(self):
-        self.optionsBox = self.addLeftWidget(gui.GroupBox('Options'))
-        super(ClothesTaskView, self).createFileChooser()
-
     def getObjectLayer(self):
         return 10
 
@@ -84,10 +65,6 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
         if not suppressSignal:
             self.updateFaceMasks(self.faceHidingTggl.selected)
 
-    def resetSelection(self):
-        super(ClothesTaskView, self).resetSelection()
-        self.updateFaceMasks(self.faceHidingTggl.selected)
-
     def onShow(self, event):
         super(ClothesTaskView, self).onShow(event)
         if gui3d.app.getSetting('cameraAutoZoom'):
@@ -97,61 +74,10 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
         super(ClothesTaskView, self).onHide(event)
         self.visualizeFaceMasks(False)
 
-    def loadHandler(self, human, values, strict):
-        #TODO: get this optimization to all the proxychoosers
-        if values[0] == 'status':
-            if values[1] == 'started':
-                # Don't update face masks during loading (optimization)
-                self.blockFaceMasking = True
-            elif values[1] == 'finished':
-                # When loading ends, update face masks
-                self.blockFaceMasking = False
-                self.updateFaceMasks(self.faceHidingTggl.selected)
-            return
-
-        if values[0] == 'clothesHideFaces':
-            enabled = values[1].lower() in ['true', 'yes']
-            self.faceHidingTggl.setChecked(enabled)
-            return
-
-        super(ClothesTaskView, self).loadHandler(human, values, strict)
-
     def onHumanChanged(self, event):
         super(ClothesTaskView, self).onHumanChanged(event)
         if event.change == 'reset':
             self.faceHidingTggl.setSelected(True)  # TODO super already reapplies masking before this is reset
-
-    def saveHandler(self, human, file):
-        super(ClothesTaskView, self).saveHandler(human, file)
-        file.write('clothesHideFaces %s\n' % str(self.faceHidingTggl.selected))
-
-    def registerLoadSaveHandlers(self):
-        super(ClothesTaskView, self).registerLoadSaveHandlers()
-        gui3d.app.addLoadHandler('clothesHideFaces', self.loadHandler)
-
-    def visualizeFaceMasks(self, enabled):
-        import material
-        import getpath
-        if enabled:
-            self.oldPxyMats = dict()
-            xray_mat = material.fromFile(getpath.getSysDataPath('materials/xray.mhmat'))
-            for pxy in self.human.getProxies(includeHumanProxy=False):
-                if pxy.type == 'Eyes':
-                    # Don't X-ray the eyes, it looks weird
-                    continue
-                self.oldPxyMats[pxy.uuid] = pxy.object.material.clone()
-                pxy.object.material = xray_mat
-        else:
-            for pxy in self.human.getProxies(includeHumanProxy=False):
-                if pxy.uuid in self.oldPxyMats:
-                    pxy.object.material = self.oldPxyMats[pxy.uuid]
-
-class FaceHideCheckbox(gui.CheckBox):
-    def enterEvent(self, event):
-        self.callEvent("onMouseEntered", None)
-
-    def leaveEvent(self, event):
-        self.callEvent("onMouseExited", None)
 
 
 # TODO: consider generalizing moving everything below to proxychooser

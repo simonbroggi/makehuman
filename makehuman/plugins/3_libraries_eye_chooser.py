@@ -52,9 +52,12 @@ class EyesTaskView(proxychooser.ProxyChooserTaskView):
 
     def proxySelected(self, proxy):
         self.human.eyesProxy = proxy
+        self.updateFaceMasks(self.faceHidingTggl.selected)
 
     def proxyDeselected(self, proxy, suppressSignal = False):
         self.human.eyesProxy = None
+        if not suppressSignal:
+            self.updateFaceMasks(self.faceHidingTggl.selected)
 
     def onShow(self, event):
         super(EyesTaskView, self).onShow(event)
