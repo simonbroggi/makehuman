@@ -528,13 +528,8 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
                     obj.getSubdivisionMesh()
         if event.change == 'proxy':
             hideFaces = True # hide faces by default
-            # try:
             if not self.faceHidingTggl.selected:
                 hideFaces = False # don't hide if explicitly not hidden is selected
-            # except AttributeError:
-            #     # TODO: get this optimization to all the proxychoosers
-            #     hideFaces = True
-            # Update face masks if topology was changed
             self.updateFaceMasks(hideFaces)
 
     def visualizeFaceMasks(self, enabled):
@@ -734,11 +729,8 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         Apply facemask (deleteVerts) defined on clothes to body and lower layers
         of clothing. Uses order as defined in self.clothesList.
         """
-        try:
-            if self.blockFaceMasking:
-                return
-        except AttributeError:
-            log.debug("TODO: implement blockingFaceMasking optimization all proxychoosers")
+        if self.blockFaceMasking:
+            return
 
         import proxy
         log.debug("Proxychooser: updating face masks (face hiding %s).", "enabled" if enableFaceHiding else "disabled")
