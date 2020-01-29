@@ -355,6 +355,7 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         supports selecting a single proxy, the mhclofile parameter is ignored,
         and it will just deselected the currently selected proxy.
         """
+        log.message('Deselecting proxy file "%s" from %s library.', mhclofile, self.proxyName)
         if self.multiProxy:
             idx = self._getProxyIndex(mhclofile)
             if idx is None:
@@ -577,6 +578,7 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
             elif values[1] == 'finished':
                 # When loading ends, update face masks
                 self.blockFaceMasking = False
+                log.warning("loadHandler finished. updateFaceFasks")
                 self.updateFaceMasks(self.faceHidingTggl.selected)
             return
 
