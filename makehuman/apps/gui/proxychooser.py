@@ -532,21 +532,20 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
                 hideFaces = False # don't hide if explicitly not hidden is selected
             self.updateFaceMasks(hideFaces)
 
+    def getProxies(self):
+        return self.human.getProxies(includeHumanProxy=False)
+
     def visualizeFaceMasks(self, enabled):
         import material
         import getpath
-        # TODO: should probably only include the proxies form its own proxyName
         if enabled:
             self.oldPxyMats = dict()
             xray_mat = material.fromFile(getpath.getSysDataPath('materials/xray.mhmat'))
-            for pxy in self.human.getProxies(includeHumanProxy=False):
-                # if pxy.type == 'Eyes':
-                #     # Don't X-ray the eyes, it looks weird
-                #     continue
+            for pxy in self.getProxies():
                 self.oldPxyMats[pxy.uuid] = pxy.object.material.clone()
                 pxy.object.material = xray_mat
         else:
-            for pxy in self.human.getProxies(includeHumanProxy=False):
+            for pxy in self.getProxies():
                 if pxy.uuid in self.oldPxyMats:
                     pxy.object.material = self.oldPxyMats[pxy.uuid]
 

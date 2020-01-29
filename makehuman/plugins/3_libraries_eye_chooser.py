@@ -73,6 +73,12 @@ class EyesTaskView(proxychooser.ProxyChooserTaskView):
             log.debug("Eye material reset to %s", self.getSelection()[0].material)
             self.getObjects()[0].material = self.getSelection()[0].material
 
+    def getProxies(self):
+        proxies = []
+        if self.human.eyesProxy != None:
+            proxies.append(self.human.eyesProxy)
+        return proxies
+
 
 # This method is called when the plugin is loaded into makehuman
 # The app reference is passed so that a plugin can attach a new category, task, or other GUI elements

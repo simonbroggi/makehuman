@@ -59,6 +59,12 @@ class EyelashesTaskView(proxychooser.ProxyChooserTaskView):
         if gui3d.app.getSetting('cameraAutoZoom'):
             gui3d.app.setFaceCamera()
 
+    def getProxies(self):
+        proxies = []
+        if self.human.eyelashesProxy != None:
+            proxies.append(self.human.eyelashesProxy)
+        return proxies
+
 
 # This method is called when the plugin is loaded into makehuman
 # The app reference is passed so that a plugin can attach a new category, task, or other GUI elements

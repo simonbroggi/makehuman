@@ -79,6 +79,9 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
         if event.change == 'reset':
             self.faceHidingTggl.setSelected(True)  # TODO super already reapplies masking before this is reset
 
+    def getProxies(self):
+        return list(self.human.clothesProxies.values())
+
 
 # TODO: consider generalizing moving everything below to proxychooser
 
