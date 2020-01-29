@@ -723,7 +723,8 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         return [uuid for (_, uuid) in decoratedClothesList]
 
     # TODO: call this when any proxy selection has changed, not in 3_libraries_clothes_chooser.py
-    # TODO: make sure this hides only faces of current proxyChooser. faceHidingTggl of specific proxychooser?
+    # TODO: make sure this hides only faces of current proxyChooser. faceHidingTggl for specific proxychoosers not working? It's always the last selected toggle value of any category.
+    # TODO: this probably needs to get called at some places (events?) where it's not yet being called.
     def updateFaceMasks(self, enableFaceHiding = True):
         """
         Apply facemask (deleteVerts) defined on clothes to body and lower layers
