@@ -735,8 +735,16 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         if self.blockFaceMasking:
             return
 
+        # https://stackoverflow.com/questions/2654113/how-to-get-the-callers-method-name-in-the-called-method
+        import inspect
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        log.debug('updateFaceMasks called by:' + calframe[1][3])
+
+
+
         import proxy
-        log.debug("Proxychooser: updating face masks (face hiding %s).", "enabled" if enableFaceHiding else "disabled")
+        log.debug("Proxychooser " + str(type(self)) + ": updateFaceMasks (face hiding " + "enabled" if enableFaceHiding else "disabled" + ").")
 
         human = self.human
         if not enableFaceHiding:
