@@ -106,6 +106,9 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
         Apply facemask (deleteVerts) defined on clothes to body and lower layers
         of clothing. Uses order as defined in self.clothesList.
         """
+
+        #TODO: Make this work for other topologies
+
         log.debug("Clothes library: updating face masks (face hiding %s).", "enabled" if enableFaceHiding else "disabled")
         if self.blockFaceMasking:
             return
