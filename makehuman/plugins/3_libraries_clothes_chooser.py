@@ -79,11 +79,14 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
         self.human.addClothesProxy(pxy)
         self.updateFaceMasks(self.faceHidingTggl.selected)
 
-    def proxyDeselected(self, pxy, suppressSignal = False):
+    def proxyDeselected(self, pxy):
         uuid = pxy.uuid
         self.human.removeClothesProxy(uuid)
-        if not suppressSignal:
-            self.updateFaceMasks(self.faceHidingTggl.selected)
+        self.updateFaceMasks(self.faceHidingTggl.selected)
+    
+    def proxyDeselectedAll(self):
+        self.human.removeAllClothesProxies()
+        # self.updateFaceMasks(self.faceHidingTggl.selected)
 
     def resetSelection(self):
         super(ClothesTaskView, self).resetSelection()
@@ -103,11 +106,12 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
         Apply facemask (deleteVerts) defined on clothes to body and lower layers
         of clothing. Uses order as defined in self.clothesList.
         """
+        log.debug("Clothes library: updating face masks (face hiding %s).", "enabled" if enableFaceHiding else "disabled")
         if self.blockFaceMasking:
             return
 
         import proxy
-        log.debug("Clothes library: updating face masks (face hiding %s).", "enabled" if enableFaceHiding else "disabled")
+        
 
         human = self.human
         if not enableFaceHiding:
@@ -170,11 +174,12 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
         super(ClothesTaskView, self).loadHandler(human, values, strict)
 
     def onHumanChanged(self, event):
+        log.debug('clothes_chooser onHumanChanged '+event.change + ' - ' ) # + if(hasattr(event, 'pxy')):event.pxy else: "None"
         super(ClothesTaskView, self).onHumanChanged(event)
         if event.change == 'reset':
             self.faceHidingTggl.setSelected(True)  # TODO super already reapplies masking before this is reset
-        elif event.change == 'proxy' and event.pxy == 'proxymeshes' and \
-             self.faceHidingTggl.selected:
+        elif event.change == 'proxyChange' and self.faceHidingTggl.selected:
+            log.debug('updating face mask because proxy has changed')
             # Update face masks if topology was changed
             self.updateFaceMasks(self.faceHidingTggl.selected)
 

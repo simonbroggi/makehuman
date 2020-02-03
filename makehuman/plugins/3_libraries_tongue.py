@@ -51,7 +51,7 @@ class TongueTaskView(proxychooser.ProxyChooserTaskView):
     def proxySelected(self, proxy):
         self.human.tongueProxy = proxy
 
-    def proxyDeselected(self, proxy, suppressSignal = False):
+    def proxyDeselected(self, proxy):
         self.human.tongueProxy = None
 
     def onShow(self, event):

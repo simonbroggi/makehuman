@@ -53,7 +53,7 @@ class EyesTaskView(proxychooser.ProxyChooserTaskView):
     def proxySelected(self, proxy):
         self.human.eyesProxy = proxy
 
-    def proxyDeselected(self, proxy, suppressSignal = False):
+    def proxyDeselected(self, proxy):
         self.human.eyesProxy = None
 
     def onShow(self, event):

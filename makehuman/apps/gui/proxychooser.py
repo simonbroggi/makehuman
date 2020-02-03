@@ -270,11 +270,14 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         """
         raise NotImplementedError("Implement ProxyChooserTaskView.proxySelected()!")
 
-    def proxyDeselected(self, pxy, suppressSignal = False):
+    def proxyDeselected(self, pxy):
         """
         Do custom work specific to this library when a proxy object was unloaded.
         """
         raise NotImplementedError("Implement ProxyChooserTaskView.proxyDeselected()!")
+
+    def proxyDeselectedAll(self):
+        raise NotImplementedError("Implement ProxyChooserTaskView.proxyDeselectedAll()!")
 
     def selectProxy(self, mhclofile):
         """
@@ -303,7 +306,7 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
 
         if not self.multiProxy and self.isProxySelected():
             # Deselect previously selected proxy
-            self.deselectProxy(None, suppressSignal = True)
+            self.deselectProxy(None)
 
         mesh,obj = pxy.loadMeshAndObject(human)
         
@@ -330,9 +333,7 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
 
         self.proxySelected(pxy)
 
-        self.signalChange()
-
-    def deselectProxy(self, mhclofile, suppressSignal = False):
+    def deselectProxy(self, mhclofile):
         """
         Deselect specified proxy from library selections. If this library only
         supports selecting a single proxy, the mhclofile parameter is ignored,
@@ -355,21 +356,37 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         self.filechooser.deselectItem(mhclofile)
         self.filechooser.deselectItem( self.getAlternativeFile(mhclofile) )  # In case an ascii or binary file was loaded instead
 
-        self.proxyDeselected(pxy, suppressSignal)
+        self.proxyDeselected(pxy)
         pxy.object = None   # Drop pointer to object
 
         if not self.multiProxy:
             # Select None item in file list
             self.filechooser.selectItem(None)
 
-        if not suppressSignal:
-            self.signalChange()
-
     def deselectAllProxies(self):
-        selectionsCopy = list(self.getSelection())
-        for p in selectionsCopy:
-            self.deselectProxy(p.file, suppressSignal = True)
-        self.signalChange()
+        if self.multiProxy:
+            log.debug("STARTING DESELECT ALL PROXIES")
+            # selectionsCopy = list(self.getSelection())
+            for idx in range(len(self.selectedProxies)-1, -1, -1): # len(self.selectedProxies) > 0:
+                log.debug("deleting proxie %s", idx)
+                pxy = self.selectedProxies[idx]
+                # for p in selectionsCopy:
+                # idx = self._getProxyIndex(p.file)
+                # if idx is None:
+                #     continue
+                # pxy = self.selectedProxies[idx]
+                obj = pxy.object
+                gui3d.app.removeObject(obj)
+                del self.selectedProxies[idx]
+                self.filechooser.deselectItem(pxy.file)
+                self.filechooser.deselectItem( self.getAlternativeFile(pxy.file) )  # In case an ascii or binary file was loaded instead
+                # self.proxyDeselected(pxy)
+                pxy.object = None   # Drop pointer to object
+                log.debug("deleted proxie %s  %s", idx, len(self.selectedProxies))
+            self.proxyDeselectedAll()
+            log.debug("END DESELECT ALL PROXIES")
+        else:
+            log.debug("TODO delselect all proxies for non nultiProxy")
 
     def isProxySelected(self):
         return len(self.getSelection()) > 0
@@ -456,12 +473,6 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         if updateSubdivided and obj.isSubdivided():
             obj.getSubdivisionMesh()
 
-    def signalChange(self):
-        human = self.human
-        event = events3d.HumanEvent(human, 'proxy')
-        event.pxy = self.proxyName
-        human.callEvent('onChanged', event)
-
     def onShow(self, event):
         if self._filecache is None:
             # Init cache
@@ -491,6 +502,7 @@ class ProxyChooserTaskView(gui3d.TaskView, filecache.MetadataCacher):
         gui3d.TaskView.onHide(self, event)
 
     def onHumanChanged(self, event):
+        log.debug('proxychooser (' + self.proxyName + ') onHumanChanged '+event.change + ' - ' )
         if event.change == 'reset':
             self.resetSelection()
         if event.change in ['targets', 'modifier']:

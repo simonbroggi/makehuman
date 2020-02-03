@@ -51,7 +51,7 @@ class TeethTaskView(proxychooser.ProxyChooserTaskView):
     def proxySelected(self, proxy):
         self.human.teethProxy = proxy
 
-    def proxyDeselected(self, proxy, suppressSignal = False):
+    def proxyDeselected(self, proxy):
         self.human.teethProxy = None
 
     def onShow(self, event):

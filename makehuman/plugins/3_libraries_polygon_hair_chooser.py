@@ -52,7 +52,7 @@ class HairTaskView(proxychooser.ProxyChooserTaskView):
     def proxySelected(self, proxy):
         self.human.hairProxy = proxy
 
-    def proxyDeselected(self, proxy, suppressSignal = False):
+    def proxyDeselected(self, proxy):
         self.human.hairProxy = None
 
     def onShow(self, event):

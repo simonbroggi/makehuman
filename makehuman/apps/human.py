@@ -258,6 +258,18 @@ class Human(guicommon.Object, animation.AnimatedMesh):
         event.proxy_obj = proxy
         self.callEvent('onChanged', event)
 
+    def removeAllClothesProxies(self):
+        self._clothesProxies = {}
+        # event = events3d.HumanEvent(self, 'proxyChange')
+        # proxy = None
+        # if uuid in self._clothesProxies:
+        #     proxy = self._clothesProxies[uuid]
+        #     del self._clothesProxies[uuid]
+        # event.proxy = 'clothes'
+        # event.action = 'remove'
+        # event.proxy_obj = proxy
+        # self.callEvent('onChanged', event)
+
     def _swapProxies(self, oldPxy, newPxy):
         """
         Update bound meshes for animation when proxies are changed

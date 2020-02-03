@@ -51,7 +51,7 @@ class EyelashesTaskView(proxychooser.ProxyChooserTaskView):
     def proxySelected(self, proxy):
         self.human.eyelashesProxy = proxy
 
-    def proxyDeselected(self, proxy, suppressSignal = False):
+    def proxyDeselected(self, proxy):
         self.human.eyelashesProxy = None
 
     def onShow(self, event):

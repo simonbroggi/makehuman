@@ -94,14 +94,13 @@ class ProxyTaskView(proxychooser.ProxyChooserTaskView):
         Called when a new proxy has been selected.
         """
         if not mhclofile:
-            self.deselectProxy(None, suppressSignal = True)
+            self.deselectProxy(None)
 
         if self.isProxySelected():
             # Deselect previously selected proxy
-            self.deselectProxy(None, suppressSignal = True)
+            self.deselectProxy(None)
 
         if not mhclofile:
-            self.signalChange()
             return
 
         pxy = proxy.loadProxy(self.human,
@@ -119,9 +118,7 @@ class ProxyTaskView(proxychooser.ProxyChooserTaskView):
 
         self.filechooser.selectItem(mhclofile)
 
-        self.signalChange()
-
-    def deselectProxy(self, mhclofile, suppressSignal = False):
+    def deselectProxy(self, mhclofile):
         """
         Deselect specified proxy from library selections.
         """
@@ -130,9 +127,6 @@ class ProxyTaskView(proxychooser.ProxyChooserTaskView):
 
         self.human.setProxy(None)
         self.filechooser.deselectItem(mhclofile)
-
-        if not suppressSignal:
-            self.signalChange()
 
     def getSelection(self):
         if self.isProxySelected():
