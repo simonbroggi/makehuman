@@ -247,11 +247,6 @@ class Human(guicommon.Object, animation.AnimatedMesh):
         self.callEvent('onChanged', event)
 
     def removeClothesProxy(self, uuid):
-
-        log.debug("proxy being removed: ")
-        log.debug(self._clothesProxies.get(uuid, None))
-        log.debug("  -  ")
-
         self._swapProxies(self._clothesProxies.get(uuid, None), None)
         event = events3d.HumanEvent(self, 'proxyChange')
         proxy = None
