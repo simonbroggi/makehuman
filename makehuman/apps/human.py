@@ -275,6 +275,21 @@ class Human(guicommon.Object, animation.AnimatedMesh):
         # event.proxy_obj = proxy
         # self.callEvent('onChanged', event)
 
+
+    # TODO add _addonProxies dict(proxyName -> list of proxies) (for now the list would be only one item except for clothes)
+    # proxyName could be 'clothes' 'eyes' 'mouth' 'teeth' etc...
+    # whenever a new proxy librarie is added it just needs to define a new proxyName for the system to deep working.
+    # lists of proxies should be ordered by theire layer (example: lower layer of clothing first (t-shirt), then higher layer (jacket))
+    # this should then replace the property clothesProxies(self) etc..
+
+    def getAddonProxies(self, proxyName = None):
+        """
+        Return a list of proxies with the given proxyName assigned to this human.
+        If no proxyName is given, return all proxies.
+        The list should be ordered by render order of the proxies.
+        """
+
+
     def _swapProxies(self, oldPxy, newPxy):
         """
         Update bound meshes for animation when proxies are changed
