@@ -195,6 +195,9 @@ class ClothesTaskView(proxychooser.ProxyChooserTaskView):
         gui3d.app.addLoadHandler('clothesHideFaces', self.loadHandler)
 
     def visualizeFaceMasks(self, enabled):
+        """
+        X Ray all clothes to make underneeth geometry visible.
+        """
         import material
         import getpath
         if enabled:
