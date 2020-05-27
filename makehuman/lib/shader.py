@@ -10,7 +10,7 @@
 
 **Authors:**           Glynn Clements
 
-**Copyright(c):**      MakeHuman Team 2001-2019
+**Copyright(c):**      MakeHuman Team 2001-2020
 
 **Licensing:**         AGPL3
 
@@ -459,6 +459,8 @@ class Shader(object):
             self.uniforms = []
             for index in range(parameterCount):
                 name, size, type = glGetActiveUniform(self.shaderId, index)
+                if not name:
+                    continue
                 location = glGetUniformLocation(self.shaderId, name)
                 if name.startswith(b'gl_'):
                     log.debug("Shader: adding built-in uniform %s", name)

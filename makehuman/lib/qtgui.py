@@ -10,7 +10,7 @@
 
 **Authors:**           Glynn Clements, Jonas Hauquier
 
-**Copyright(c):**      MakeHuman Team 2001-2019
+**Copyright(c):**      MakeHuman Team 2001-2020
 
 **Licensing:**         AGPL3
 
@@ -578,8 +578,8 @@ class RadioButton(QtWidgets.QRadioButton, ButtonBase):
         self.setChecked(selected)
         self._addToGroup(group)
 
-    def __del__(self):
-        self._removeFromGroup(self.group)
+    #def __del__(self):
+    #    self._removeFromGroup(self.group)
 
     def _addToGroup(self, group):
         if id(group) in type(self).groups:
@@ -824,6 +824,17 @@ class TextView(QtWidgets.QLabel, Widget):
     def setTextFormat(self, text, *values):
         text = getLanguageString(text)
         super(TextView,self).setText(text % values)
+
+    # Workaround for incorrect resizing with enabled word wrapping
+    # https://bugreports.qt.io/browse/QTBUG-37673
+    def resizeEvent(self, event):
+        super(TextView, self).resizeEvent(event)
+
+        if self.wordWrap():
+            # heightForWidth rely on minimumSize to evaulate, so reset it before
+            self.setMinimumHeight(0)
+            # define minimum height
+            self.setMinimumHeight(self.heightForWidth(self.width()))
 
 class SliderBox(GroupBox):
     pass
